@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"/>
+    <title>Borrow</title>
+    <style>
+        /* General styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            display: flex;
+        }
+
+        /* Sidebar style */
+        .sidebar {
+            height: 100vh;
+            width: 250px;
+            background-color: #333;
+            padding-top: 20px;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        .sidebar a {
+            padding: 10px 15px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+        }
+
+        .sidebar a:hover {
+            background-color: #575757;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 250px; /* Same as sidebar width */
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 20px; /* Adds space below the header */
+        }
+
+        /* Search and add styles */
+        .search-and-add {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            margin-top: 20px; /* Adds space above the search bar */
+        }
+
+        .search-bar input {
+            padding: 0.5rem;
+            width: 200px;
+        }
+
+        .green-button {
+            background-color: green; 
+            color: white; 
+            border: none; 
+            padding: 8px 15px;
+            text-align: center;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .green-button:hover {
+            background-color: darkgreen; 
+        }
+
+        /* Table styles */
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .inventory-table th, .inventory-table td {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .inventory-table th {
+            background-color: #f4f4f4;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .search-bar input {
+                width: 100%;
+            }
+
+            .inventory-table, .inventory-table th, .inventory-table td {
+                display: block;
+                width: 100%;
+            }
+
+            .inventory-table th, .inventory-table td {
+                text-align: right;
+                padding-left: 50%;
+            }
+
+            .inventory-table th::before, .inventory-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 45%;
+                padding-left: 1rem;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="User Profile.php"><i class="fa-solid fa-cog"></i> User Profile</a>
+    <a href="dashboard.php"><i class="fa-solid fa-tachometer-alt"></i> Dashboard</a>
+    <a href="inventory.php"><i class="fa-solid fa-file-alt"></i> Borrow</a>
+    <a href="stocks.php"><i class="fa-solid fa-boxes"></i> Stocks</a>    
+    <a href="tracker.php"><i class="fa-solid fa-map-marker-alt"></i> Transaction Details</a>
+    <a href="return.php"><i class="fa-solid fa-undo-alt"></i> Return Record</a>
+</div>
+
+<!-- Main content -->
+<div class="main-content">
+    <header>
+        <h1>CONSTRUCTRACK</h1>
+    </header>
+
+    <div class="container">
+        <div class="search-and-add">
+            <div class="search-bar">
+                <input type="text" placeholder="Search Inventory...">
+            </div>
+            <!-- Green Button for Adding New Record -->
+            <form method="post" action="addstock.php">
+                <button type="submit" name="myButton" class="green-button">Add New Record</button>
+            </form>
+        </div>
+
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Employee Name</th>
+                    <th>Item ID</th>
+                    <th>Item Name</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Item Return</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="Employee Name">Kyle</td>
+                    <td data-label="Item ID">001</td>
+                    <td data-label="Item Name">Excavator</td>
+                    <td data-label="Category">Heavy Machinery</td>
+                    <td data-label="Quantity">5</td>
+                    <td data-label="Item Return">56</td>
+                </tr>
+                <tr>
+                    <td data-label="Employee Name">Hansel</td>
+                    <td data-label="Item ID">002</td>
+                    <td data-label="Item Name">Bulldozer</td>
+                    <td data-label="Category">Heavy Machinery</td>
+                    <td data-label="Quantity">3</td>
+                    <td data-label="Item Return">56</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="item-details" style="margin-top: 20px; display: none;">
+        <h3>Item Details</h3>
+        <p id="details-content"></p>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $(".details-btn").on("click", function() {
+            var itemId = $(this).data('id');
+            
+            $.ajax({
+                url: 'get_item_details.php',
+                type: 'GET',
+                data: { id: itemId },
+                success: function(response) {
+                    $('#details-content').html(response);
+                    $('#item-details').show();
+                }
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
